@@ -273,6 +273,30 @@
   window.addEventListener('resize', updateProgress);
   updateProgress();
 
+  // The original image remains a normal link when dialogs are unavailable.
+  const imageLinks = [...document.querySelectorAll('[data-lightbox]')];
+  if (imageLinks.length && typeof HTMLDialogElement !== 'undefined') {
+    const dialog = document.createElement('dialog');
+    dialog.className = 'media-dialog';
+    dialog.setAttribute('aria-labelledby', 'media-dialog-title');
+    dialog.innerHTML = '<div class="media-dialog-top"><h2 id="media-dialog-title"></h2><button type="button" class="media-dialog-close" aria-label="Close image">×</button></div><img class="media-dialog-image" alt="">';
+    body.append(dialog);
+    const title = dialog.querySelector('h2');
+    const image = dialog.querySelector('img');
+    let opener;
+    dialog.querySelector('button').addEventListener('click', () => dialog.close());
+    dialog.addEventListener('click', event => { if (event.target === dialog) { const box = dialog.getBoundingClientRect(); if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) dialog.close(); } });
+    dialog.addEventListener('close', () => { body.classList.remove('lightbox-open'); opener?.focus({ preventScroll: true }); });
+    imageLinks.forEach(link => link.addEventListener('click', event => {
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      event.preventDefault(); opener = link;
+      title.textContent = link.dataset.caption || 'Project photograph';
+      image.alt = link.querySelector('img')?.alt || title.textContent;
+      image.src = link.href;
+      body.classList.add('lightbox-open'); dialog.showModal();
+    }));
+  }
+
   // Open a directly linked project when it is inside a disclosure.
   const showHash = () => {
     if (!location.hash) return;
