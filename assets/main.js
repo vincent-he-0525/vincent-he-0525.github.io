@@ -148,6 +148,9 @@
       });
       gallery.querySelectorAll('.stop-video,.video-state').forEach(element => element.remove());
     };
+    document.addEventListener('play', event => {
+      if (event.target instanceof HTMLAudioElement) stopVideos();
+    }, true);
     const select = (tab, reveal = false) => {
       stopVideos();
       active = tab;
@@ -195,6 +198,7 @@
     gallery.querySelector('[data-work-prev]').addEventListener('click', () => step(-1));
     gallery.querySelector('[data-work-next]').addEventListener('click', () => step(1));
     gallery.querySelectorAll('[data-video-id]').forEach(button => button.addEventListener('click', () => {
+      document.querySelectorAll('audio').forEach(audio => audio.pause());
       stopVideos();
       const session = mediaSession;
       const frame = button.closest('[data-video-frame]');
